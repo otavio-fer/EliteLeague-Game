@@ -13,9 +13,18 @@
             padding: 0;
             overflow: hidden; /* Evita rolagem */
             font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
+            background-color: #f0f0f0; 
             color: #333;
             text-align: center;
+        }
+
+        /* Estilo para as telas com a logo de fundo */
+        .tela.com-logo-fundo {
+            background-image: url('LOGO RP ELITE PRETO.png'); /* Caminho para a sua logo */
+            background-size: contain; 
+            background-repeat: no-repeat; 
+            background-position: center center; 
+            background-color: #f8f8f8; 
         }
 
         .tela {
@@ -25,8 +34,8 @@
             padding: 20px;
             box-sizing: border-box;
             display: none;
-            height: 100%; /* Faz as telas de conteúdo preencherem a altura */
-            overflow-y: auto; /* Permite rolar se o conteúdo das instruções for grande */
+            height: 100%; 
+            overflow-y: auto; 
         }
 
         .tela.ativa {
@@ -54,11 +63,11 @@
 
         /* --- ESTILOS FASE 1 e 2: RASPADINHA --- */
         #fase1, #fase2 {
-            background-color: #fff;
+            background-color: #f8f8f8; /* Cinza bem claro */
             border-radius: 10px;
             padding: 20px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            height: auto; /* Altura da raspadinha é automática */
+            height: auto; 
         }
         .container-raspadinhas {
             display: flex;
@@ -71,7 +80,6 @@
             position: relative;
             border-radius: 5px;
             overflow: hidden;
-            /* MUDANÇA: Cor de fundo da raspadinha */
             background-color: #E84A23; /* Vermelho da logo */
         }
         .raspadinha canvas {
@@ -90,18 +98,19 @@
             box-sizing: border-box;
             font-size: 0.9em;
             font-weight: bold;
-            color: white; /* MUDANÇA: Texto da raspadinha em branco */
+            color: white; /* Texto da raspadinha em branco */
         }
         
         /* --- ESTILOS FASE 3: ARREMESSO --- */
+        /* CORREÇÃO DE LAYOUT: Removido max-width: 100% para herdar o max-width: 400px do .tela */
         #fase3 {
             position: relative;
             padding: 0;
             height: 100vh;
-            max-width: 100%;
+            /* max-width: 100%; FOI REMOVIDO */
         }
         #canvas-arremesso {
-            /* REMOVIDO: background-color, agora será uma imagem */
+            background-color: #f8f8f8; /* Fundo neutro */
             border: none;
             border-radius: 0;
             display: block; 
@@ -138,7 +147,7 @@
 </head>
 <body>
 
-    <div id="instrucoes-fase1" class="tela ativa">
+    <div id="instrucoes-fase1" class="tela ativa com-logo-fundo">
         <h2>Bem-vindo ao Desafio Elite League!</h2>
         <p>Raspe UMA das três áreas para passar pela defesa!</p>
         <p><strong>Atenção:</strong> Ao começar a raspar uma, você não pode trocar!</p>
@@ -163,7 +172,7 @@
         </div>
     </div>
 
-    <div id="instrucoes-fase2" class="tela">
+    <div id="instrucoes-fase2" class="tela com-logo-fundo">
         <h2>Você passou pela defesa!</h2>
         <p>Agora, raspe uma das áreas para encontrar o passe livre para o arremesso!</p>
         <button onclick="mostrarFase2()">Continuar</button>
@@ -187,7 +196,7 @@
         </div>
     </div>
 
-    <div id="instrucoes-fase3" class="tela">
+    <div id="instrucoes-fase3" class="tela com-logo-fundo">
         <h2>Fase 3: O Arremesso</h2>
         <p>Você conseguiu o espaço livre! Agora é com você.</p>
         <p>Você tem 5 segundos. Arraste o dedo <strong>para cima</strong> na bola para arremessar.</p>
@@ -211,19 +220,20 @@
         let telaAtual = 'instrucoes-fase1';
         
         // --- VARIÁVEIS DAS RASPADINHAS ---
-        // MUDANÇA: Cor das raspadinhas para o tom da logo
-        const RASPADINHA_COLOR_COVER = '#E84A23'; // Vermelho da logo
-        const RASPADINHA_COLOR_TEXT_SUCCESS = 'white'; // Texto de sucesso em branco
-        const RASPADINHA_COLOR_TEXT_FAIL = 'white'; // Texto de falha em branco
+        const RASPADINHA_COLOR_COVER = '#E84A23'; 
+        const RASPADINHA_COLOR_TEXT_SUCCESS = 'white'; 
+        const RASPADINHA_COLOR_TEXT_FAIL = 'white'; 
 
         const frasesDerrotaFase1 = [
             "Toco do Bambu!",
-            "Toco do Looney!",
-            "Toco do Alexandre!",
+            "Toco da Baby!",
+            "Toco da Colô!",
             "Passe interceptado pelo o Leo Trassi!",
             "Passe interceptado pelo o Serasa!",
-            "Passe interceptado pelo o Davi!",
+            "Passe interceptado pelo a Bia!",
             "Falta ofensiva!",
+            "Errou o passe!",
+            "Caiu na Pressão!",
         ];
         let cartaVencedora1 = 0;
         let cartaSendoRaspada1 = 0;
@@ -235,11 +245,11 @@
             "24 segundos estouraram!",
             "Perdeu a bola!",
             "Toco do Bambu!",
-            "Toco do Looney!",
-            "Toco do Alexandre!",
+            "Toco da Colô!",
+            "Toco da Xandrita!",
             "Passe interceptado pelo o Leo Trassi!",
-            "Passe interceptado pelo o Serasa!",
-            "Passe interceptado pelo o Davi!",
+            "Passe interceptado pelo a Winnie!",
+            "Passe interceptado pelo a Mafe!",
             "Falta ofensiva!",
         ];
         let cartaVencedora2 = 0;
@@ -249,15 +259,6 @@
         // --- VARIÁVEIS DA FASE 3: ARREMESSO ---
         let ctxFase3;
         let canvasFase3;
-        
-        // MUDANÇA: Objeto Image para o fundo
-        let backgroundImage = new Image(); 
-        
-        // !!!!!!!!!!!!!!!!!!
-        // !!! SUBSTITUA O LINK ABAIXO pelo link da sua imagem da quadra hospedada
-        // !!!!!!!!!!!!!!!!!!
-        backgroundImage.src = 'quadra.jpg'; // LINK DE EXEMPLO
-        // Ex: backgroundImage.src = 'https://seusite.com/quadra.jpg';
         
         let bola;
         let cesta;
@@ -570,10 +571,8 @@
             canvasFase3.width = containerTela.offsetWidth;
             canvasFase3.height = containerTela.offsetHeight;
             
-            if (canvasFase3.width > 400) {
-                canvasFase3.width = 400;
-                canvasFase3.style.marginLeft = `${(containerTela.offsetWidth - 400) / 2}px`;
-            }
+            // CORREÇÃO DE LAYOUT: Removido o 'if (width > 400)' e o 'marginLeft'
+            // O canvas agora preenche 100% do container, que já está centralizado
 
             jogador = {
                 largura: 60,
@@ -749,20 +748,18 @@
             ctxFase3.fillRect(jogador.x, jogador.y + 40, 60, 15); 
         }
 
-        // Esta é a função que foi cortada
         function loopJogo() {
             if (!jogoFase3Ativo) {
                 animationFrameId = undefined;
                 return;
             }
 
-            // MUDANÇA: Limpa o canvas e desenha a imagem de fundo
+            // MUDANÇA: Apenas limpa o canvas (o fundo #f8f8f8 é do CSS)
             ctxFase3.clearRect(0, 0, canvasFase3.width, canvasFase3.height);
-            ctxFase3.drawImage(backgroundImage, 0, 0, canvasFase3.width, canvasFase3.height);
             
-            // O chão da quadra agora é parte da imagem, então esta linha foi removida:
-            // ctxFase3.fillStyle = '#654321'; 
-            // ctxFase3.fillRect(0, canvasFase3.height - 30, canvasFase3.width, 30); 
+            // MUDANÇA: Redesenha o chão, já que a imagem da quadra foi removida
+            ctxFase3.fillStyle = '#AAAAAA'; // Um cinza simples para o chão
+            ctxFase3.fillRect(0, canvasFase3.height - 30, canvasFase3.width, 30); 
             
             desenharJogador();
             
@@ -800,7 +797,6 @@
                     return; 
                 }
                 // Verificação de ERRO (Air ball / Quase)
-                // MUDANÇA: Posição do "chão" ajustada para ficar alinhada com o jogador
                 if (bola.y > canvasFase3.height - 30 - bola.raio && bola.velY > 0) { 
                     if (tocouAro) { mostrarTelaFinal("Quase que entrou"); } else { mostrarTelaFinal("Air ball :/"); }
                     return; 
