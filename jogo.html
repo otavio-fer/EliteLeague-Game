@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Elite League RP - Mini Game</title>
+    <style>
+        /* --- Reset global para preencher a tela --- */
+        html, body {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Evita rolagem */
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            color: #333;
+            text-align: center;
+        }
+
+        .tela {
+            width: 100%;
+            max-width: 400px; /* Mantém a largura máxima */
+            margin: 0 auto; /* Centraliza */
+            padding: 20px;
+            box-sizing: border-box;
+            display: none;
+            height: 100%; /* Faz as telas de conteúdo preencherem a altura */
+            overflow-y: auto; /* Permite rolar se o conteúdo das instruções for grande */
+        }
+
+        .tela.ativa {
+            display: block;
+        }
+
+        h2 {
+            color: #E84A23; /* Cor da sua liga */
+        }
+
+        button {
+            background-color: #E84A23;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #B93B1D;
+        }
+
+        /* --- ESTILOS FASE 1 e 2: RASPADINHA --- */
+        #fase1, #fase2 {
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            height: auto; /* Altura da raspadinha é automática */
+        }
+        .container-raspadinhas {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+        .raspadinha {
+            width: 100px;
+            height: 100px;
+            position: relative;
+            border-radius: 5px;
+            overflow: hidden;
+            /* MUDANÇA: Cor de fundo da raspadinha */
+            background-color: #E84A23; /* Vermelho da logo */
+        }
+        .raspadinha canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            cursor: grabbing;
+        }
+        .texto-raspadinha {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 5px;
+            box-sizing: border-box;
+            font-size: 0.9em;
+            font-weight: bold;
+            color: white; /* MUDANÇA: Texto da raspadinha em branco */
+        }
+        
+        /* --- ESTILOS FASE 3: ARREMESSO --- */
+        #fase3 {
+            position: relative;
+            padding: 0;
+            height: 100vh;
+            max-width: 100%;
+        }
+        #canvas-arremesso {
+            /* REMOVIDO: background-color, agora será uma imagem */
+            border: none;
+            border-radius: 0;
+            display: block; 
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+        }
+        #temporizador {
+            font-size: 2em;
+            font-weight: bold;
+            color: #E84A23;
+            position: absolute;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+        }
+
+        /* --- ESTILOS TELA FINAL --- */
+        #tela-final {
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            height: auto;
+        }
+        #mensagem-final {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 25px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="instrucoes-fase1" class="tela ativa">
+        <h2>Bem-vindo ao Desafio Elite League!</h2>
+        <p>Raspe UMA das três áreas para passar pela defesa!</p>
+        <p><strong>Atenção:</strong> Ao começar a raspar uma, você não pode trocar!</p>
+        <button onclick="mostrarFase1()">Começar</button>
+    </div>
+
+    <div id="fase1" class="tela">
+        <h2>Fase 1: A Defesa</h2>
+        <div class="container-raspadinhas">
+            <div class="raspadinha" id="card1-1">
+                <div class="texto-raspadinha" id="texto1-1"></div>
+                <canvas id="canvas1-1" width="100" height="100"></canvas>
+            </div>
+            <div class="raspadinha" id="card1-2">
+                <div class="texto-raspadinha" id="texto1-2"></div>
+                <canvas id="canvas1-2" width="100" height="100"></canvas>
+            </div>
+            <div class="raspadinha" id="card1-3">
+                <div class="texto-raspadinha" id="texto1-3"></div>
+                <canvas id="canvas1-3" width="100" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div id="instrucoes-fase2" class="tela">
+        <h2>Você passou pela defesa!</h2>
+        <p>Agora, raspe uma das áreas para encontrar o passe livre para o arremesso!</p>
+        <button onclick="mostrarFase2()">Continuar</button>
+    </div>
+
+    <div id="fase2" class="tela">
+        <h2>Fase 2: O Passe Livre</h2>
+        <div class="container-raspadinhas">
+            <div class="raspadinha" id="card2-1">
+                <div class="texto-raspadinha" id="texto2-1"></div>
+                <canvas id="canvas2-1" width="100" height="100"></canvas>
+            </div>
+            <div class="raspadinha" id="card2-2">
+                <div class="texto-raspadinha" id="texto2-2"></div>
+                <canvas id="canvas2-2" width="100" height="100"></canvas>
+            </div>
+            <div class="raspadinha" id="card2-3">
+                <div class="texto-raspadinha" id="texto2-3"></div>
+                <canvas id="canvas2-3" width="100" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div id="instrucoes-fase3" class="tela">
+        <h2>Fase 3: O Arremesso</h2>
+        <p>Você conseguiu o espaço livre! Agora é com você.</p>
+        <p>Você tem 5 segundos. Arraste o dedo <strong>para cima</strong> na bola para arremessar.</p>
+        <button onclick="mostrarFase3()">Arremessar!</button>
+    </div>
+
+    <div id="fase3" class="tela">
+        <div id="temporizador">5.0</div>
+        <canvas id="canvas-arremesso"></canvas>
+    </div>
+
+    <div id="tela-final" class="tela">
+        <h2 id="titulo-final">Fim de Jogo</h2>
+        <p id="mensagem-final"></p>
+        <button onclick="iniciarJogo()">Jogar Novamente</button>
+    </div>
+
+
+    <script>
+        // --- VARIÁVEIS DE CONTROLE GERAL ---
+        let telaAtual = 'instrucoes-fase1';
+        
+        // --- VARIÁVEIS DAS RASPADINHAS ---
+        // MUDANÇA: Cor das raspadinhas para o tom da logo
+        const RASPADINHA_COLOR_COVER = '#E84A23'; // Vermelho da logo
+        const RASPADINHA_COLOR_TEXT_SUCCESS = 'white'; // Texto de sucesso em branco
+        const RASPADINHA_COLOR_TEXT_FAIL = 'white'; // Texto de falha em branco
+
+        const frasesDerrotaFase1 = [
+            "Toco do Bambu!",
+            "Toco do Looney!",
+            "Toco do Alexandre!",
+            "Passe interceptado pelo o Leo Trassi!",
+            "Passe interceptado pelo o Serasa!",
+            "Passe interceptado pelo o Davi!",
+            "Falta ofensiva!",
+        ];
+        let cartaVencedora1 = 0;
+        let cartaSendoRaspada1 = 0;
+        let raspadinhas1 = {};
+
+        const frasesDerrotaFase2 = [
+            "Errou o passe!",
+            "Caiu na Pressão!",
+            "24 segundos estouraram!",
+            "Perdeu a bola!",
+            "Toco do Bambu!",
+            "Toco do Looney!",
+            "Toco do Alexandre!",
+            "Passe interceptado pelo o Leo Trassi!",
+            "Passe interceptado pelo o Serasa!",
+            "Passe interceptado pelo o Davi!",
+            "Falta ofensiva!",
+        ];
+        let cartaVencedora2 = 0;
+        let cartaSendoRaspada2 = 0;
+        let raspadinhas2 = {};
+
+        // --- VARIÁVEIS DA FASE 3: ARREMESSO ---
+        let ctxFase3;
+        let canvasFase3;
+        
+        // MUDANÇA: Objeto Image para o fundo
+        let backgroundImage = new Image(); 
+        
+        // !!!!!!!!!!!!!!!!!!
+        // !!! SUBSTITUA O LINK ABAIXO pelo link da sua imagem da quadra hospedada
+        // !!!!!!!!!!!!!!!!!!
+        backgroundImage.src = 'quadra.jpg'; // LINK DE EXEMPLO
+        // Ex: backgroundImage.src = 'https://seusite.com/quadra.jpg';
+        
+        let bola;
+        let cesta;
+        let jogador;
+        let gravidade = 0.2; 
+        let atrito = 0.005; 
+        let arremessando = false;
+        let tocando = false;
+        let bolaSendoArrastada = false;
+        let tocouAro = false;
+        let pontoInicial = { x: 0, y: 0 };
+        let pontoAtualArrasto = { x: 0, y: 0 };
+        let jogoFase3Ativo = false;
+        let timerArremessoTimeout;
+        let tempoRestante;
+        let intervaloTimer;
+        let animationFrameId;
+
+        // --- CONTROLE DE FLUXO DO JOGO ---
+        document.addEventListener('DOMContentLoaded', iniciarJogo);
+
+        function iniciarJogo() {
+            cancelAnimationFrame(animationFrameId);
+            clearTimeout(timerArremessoTimeout);
+            clearInterval(intervaloTimer);
+            
+            cartaSendoRaspada1 = 0;
+            raspadinhas1 = {};
+            resetRaspadinhas('1'); 
+            
+            cartaSendoRaspada2 = 0;
+            raspadinhas2 = {};
+            resetRaspadinhas('2');
+
+            jogoFase3Ativo = false;
+            arremessando = false;
+            tocando = false;
+            bolaSendoArrastada = false;
+            tocouAro = false;
+            document.getElementById('temporizador').style.display = 'block'; 
+            document.getElementById('temporizador').innerText = '5.0'; 
+            
+            mostrarTela('instrucoes-fase1');
+        }
+
+        function mostrarTela(idTela) {
+            document.querySelectorAll('.tela').forEach(tela => {
+                tela.classList.remove('ativa');
+            });
+            document.getElementById(idTela).classList.add('ativa');
+            telaAtual = idTela;
+        }
+
+        function mostrarFase1() {
+            mostrarTela('fase1');
+            setupRaspadinha1();
+        }
+
+        function irParaInstrucoesFase2() {
+            mostrarTela('instrucoes-fase2');
+        }
+
+        function mostrarFase2() {
+            mostrarTela('fase2');
+            setupRaspadinha2();
+        }
+
+        function irParaInstrucoesFase3() {
+            mostrarTela('instrucoes-fase3');
+        }
+        
+        function mostrarFase3() {
+            mostrarTela('fase3');
+            setupArremesso(); 
+            iniciarArremessoTimer();
+            animationFrameId = requestAnimationFrame(loopJogo);
+        }
+
+        function mostrarTelaFinal(mensagem, titulo = "Fim de Jogo") {
+            jogoFase3Ativo = false;
+            cancelAnimationFrame(animationFrameId);
+            clearTimeout(timerArremessoTimeout);
+            clearInterval(intervaloTimer);
+            document.getElementById('titulo-final').innerText = titulo;
+            document.getElementById('mensagem-final').innerText = mensagem;
+            mostrarTela('tela-final');
+        }
+
+        // --- LÓGICA DAS RASPADINHAS (Genérica) ---
+        
+        function resetRaspadinhas(fasePrefix) {
+            for (let i = 1; i <= 3; i++) {
+                const canvas = document.getElementById(`canvas${fasePrefix}-${i}`);
+                if (canvas) {
+                    const ctx = canvas.getContext('2d');
+                    ctx.clearRect(0, 0, canvas.width, canvas.height); 
+                    ctx.fillStyle = RASPADINHA_COLOR_COVER; 
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    canvas.style.pointerEvents = 'auto'; 
+                    
+                    const objRaspadinhas = (fasePrefix === '1') ? raspadinhas1 : raspadinhas2;
+                    objRaspadinhas[i] = {
+                        canvas: canvas,
+                        ctx: ctx,
+                        raspado: false,
+                        raspando: false
+                    };
+                }
+            }
+        }
+
+        function raspar(e, id, fasePrefix) {
+            const objRaspadinhas = (fasePrefix === '1') ? raspadinhas1 : raspadinhas2;
+            if (!objRaspadinhas[id] || !objRaspadinhas[id].raspando || objRaspadinhas[id].raspado) return;
+            e.preventDefault();
+            
+            const rect = objRaspadinhas[id].canvas.getBoundingClientRect();
+            let clientX, clientY;
+            if (e.touches) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+            const pos = { x: clientX - rect.left, y: clientY - rect.top };
+
+            const ctx = objRaspadinhas[id].ctx;
+            ctx.globalCompositeOperation = 'destination-out'; 
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, 15, 0, Math.PI * 2); 
+            ctx.fill();
+        }
+
+        // --- LÓGICA FASE 1: RASPADINHA 1 ---
+        
+        function setupRaspadinha1() {
+            cartaVencedora1 = Math.floor(Math.random() * 3) + 1;
+            let frasesUsadas = [...frasesDerrotaFase1]; 
+            for (let i = 1; i <= 3; i++) {
+                const canvas = document.getElementById(`canvas1-${i}`);
+                const ctx = canvas.getContext('2d');
+                const textoDiv = document.getElementById(`texto1-${i}`);
+                
+                if (i === cartaVencedora1) {
+                    textoDiv.innerText = "Você passou pela defesa!";
+                    textoDiv.style.color = RASPADINHA_COLOR_TEXT_SUCCESS; 
+                } else {
+                    const indexFrase = Math.floor(Math.random() * frasesUsadas.length);
+                    textoDiv.innerText = frasesUsadas.splice(indexFrase, 1)[0] || "Tente de novo";
+                    textoDiv.style.color = RASPADINHA_COLOR_TEXT_FAIL; 
+                }
+                
+                ctx.fillStyle = RASPADINHA_COLOR_COVER;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.globalCompositeOperation = 'source-over'; 
+                
+                canvas.onmousedown = (e) => iniciarRaspada1(e, i);
+                canvas.onmousemove = (e) => raspar(e, i, '1');
+                canvas.onmouseup = pararRaspada1;
+                canvas.onmouseleave = pararRaspada1;
+                canvas.ontouchstart = (e) => iniciarRaspada1(e, i);
+                canvas.ontouchmove = (e) => raspar(e, i, '1');
+                canvas.ontouchend = pararRaspada1;
+            }
+        }
+
+        function iniciarRaspada1(e, id) {
+            e.preventDefault();
+            if (cartaSendoRaspada1 === 0 || cartaSendoRaspada1 === id) { 
+                raspadinhas1[id].raspando = true;
+                cartaSendoRaspada1 = id; 
+                for(let i=1; i<=3; i++) {
+                    if(i !== id) document.getElementById(`canvas1-${i}`).style.pointerEvents = 'none';
+                }
+            }
+        }
+        
+        function pararRaspada1() {
+            if (cartaSendoRaspada1 <= 0) return; 
+            const id = cartaSendoRaspada1;
+            if (raspadinhas1[id] && raspadinhas1[id].raspando) {
+                raspadinhas1[id].raspando = false;
+                verificarRaspadinha1(id);
+            }
+        }
+
+        function verificarRaspadinha1(id) {
+            const ctx = raspadinhas1[id].ctx;
+            const canvas = raspadinhas1[id].canvas;
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const pixels = imageData.data;
+            let transparentes = 0;
+            for (let i = 3; i < pixels.length; i += 4) { 
+                if (pixels[i] === 0) { 
+                    transparentes++;
+                }
+            }
+            const percRaspado = (transparentes / (canvas.width * canvas.height));
+            
+            if (percRaspado > 0.6) { 
+                raspadinhas1[id].raspado = true;
+                ctx.clearRect(0, 0, canvas.width, canvas.height); 
+                ctx.globalCompositeOperation = 'source-over'; 
+                cartaSendoRaspada1 = -1; 
+                for(let i=1; i<=3; i++) document.getElementById(`canvas1-${i}`).style.pointerEvents = 'none'; 
+                
+                setTimeout(() => {
+                    if (id === cartaVencedora1) {
+                        irParaInstrucoesFase2(); 
+                    } else {
+                        mostrarTelaFinal("Você foi parado pela defesa!", "Fim de Jogo");
+                    }
+                }, 1000);
+            }
+        }
+
+        // --- LÓGICA FASE 2: RASPADINHA 2 ---
+
+        function setupRaspadinha2() {
+            cartaVencedora2 = Math.floor(Math.random() * 3) + 1;
+            let frasesUsadas = [...frasesDerrotaFase2]; 
+            for (let i = 1; i <= 3; i++) {
+                const canvas = document.getElementById(`canvas2-${i}`);
+                const ctx = canvas.getContext('2d');
+                const textoDiv = document.getElementById(`texto2-${i}`);
+                
+                if (i === cartaVencedora2) {
+                    textoDiv.innerText = "Você conseguiu o arremesso livre!";
+                    textoDiv.style.color = RASPADINHA_COLOR_TEXT_SUCCESS; 
+                } else {
+                    const indexFrase = Math.floor(Math.random() * frasesUsadas.length);
+                    textoDiv.innerText = frasesUsadas.splice(indexFrase, 1)[0] || "Tente de novo";
+                    textoDiv.style.color = RASPADINHA_COLOR_TEXT_FAIL; 
+                }
+                
+                ctx.fillStyle = RASPADINHA_COLOR_COVER;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.globalCompositeOperation = 'source-over'; 
+                
+                canvas.onmousedown = (e) => iniciarRaspada2(e, i);
+                canvas.onmousemove = (e) => raspar(e, i, '2');
+                canvas.onmouseup = pararRaspada2;
+                canvas.onmouseleave = pararRaspada2;
+                canvas.ontouchstart = (e) => iniciarRaspada2(e, i);
+                canvas.ontouchmove = (e) => raspar(e, i, '2');
+                canvas.ontouchend = pararRaspada2;
+            }
+        }
+
+        function iniciarRaspada2(e, id) {
+            e.preventDefault();
+            if (cartaSendoRaspada2 === 0 || cartaSendoRaspada2 === id) { 
+                raspadinhas2[id].raspando = true;
+                cartaSendoRaspada2 = id; 
+                for(let i=1; i<=3; i++) {
+                    if(i !== id) document.getElementById(`canvas2-${i}`).style.pointerEvents = 'none';
+                }
+            }
+        }
+        
+        function pararRaspada2() {
+            if (cartaSendoRaspada2 <= 0) return; 
+            const id = cartaSendoRaspada2;
+            if (raspadinhas2[id] && raspadinhas2[id].raspando) {
+                raspadinhas2[id].raspando = false;
+                verificarRaspadinha2(id);
+            }
+        }
+
+        function verificarRaspadinha2(id) {
+            const ctx = raspadinhas2[id].ctx;
+            const canvas = raspadinhas2[id].canvas;
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const pixels = imageData.data;
+            let transparentes = 0;
+            for (let i = 3; i < pixels.length; i += 4) { 
+                if (pixels[i] === 0) { 
+                    transparentes++;
+                }
+            }
+            const percRaspado = (transparentes / (canvas.width * canvas.height));
+            
+            if (percRaspado > 0.6) { 
+                raspadinhas2[id].raspado = true;
+                ctx.clearRect(0, 0, canvas.width, canvas.height); 
+                ctx.globalCompositeOperation = 'source-over'; 
+                cartaSendoRaspada2 = -1; 
+                for(let i=1; i<=3; i++) document.getElementById(`canvas2-${i}`).style.pointerEvents = 'none'; 
+                
+                setTimeout(() => {
+                    if (id === cartaVencedora2) {
+                        irParaInstrucoesFase3(); 
+                    } else {
+                        mostrarTelaFinal("O passe foi interceptado!", "Fim de Jogo");
+                    }
+                }, 1000);
+            }
+        }
+
+
+        // --- LÓGICA DA FASE 3: ARREMESSO (Antiga Fase 2) ---
+        function setupArremesso() {
+            canvasFase3 = document.getElementById('canvas-arremesso');
+            ctxFase3 = canvasFase3.getContext('2d');
+            jogoFase3Ativo = true;
+            tocouAro = false;
+            
+            const containerTela = document.getElementById('fase3');
+            canvasFase3.width = containerTela.offsetWidth;
+            canvasFase3.height = containerTela.offsetHeight;
+            
+            if (canvasFase3.width > 400) {
+                canvasFase3.width = 400;
+                canvasFase3.style.marginLeft = `${(containerTela.offsetWidth - 400) / 2}px`;
+            }
+
+            jogador = {
+                largura: 60,
+                altura: 100,
+                x: canvasFase3.width / 2 - 30,
+                y: canvasFase3.height - 100
+            };
+
+            bola = {
+                x: jogador.x + jogador.largura / 2,
+                y: jogador.y + jogador.altura / 2 - 10,
+                raio: 15,
+                velX: 0,
+                velY: 0,
+                cor: '#E84A23',
+                originalX: jogador.x + jogador.largura / 2,
+                originalY: jogador.y + jogador.altura / 2 - 10
+            };
+            
+            cesta = {
+                x: canvasFase3.width / 2 - 30,
+                y: 150,
+                largura: 60,
+                espessuraAro: 8,
+                corAro: '#555',
+                tabelaX: canvasFase3.width / 2 - 40,
+                tabelaY: 100, 
+                tabelaW: 80,
+                tabelaH: 50,
+                corTabela: '#ccc'
+            };
+
+            bola.x = bola.originalX;
+            bola.y = bola.originalY;
+            bola.velX = 0;
+            bola.velY = 0;
+
+            canvasFase3.onmousedown = iniciarToque;
+            canvasFase3.onmousemove = moverToque;
+            canvasFase3.onmouseup = soltarToque;
+            canvasFase3.ontouchstart = iniciarToque;
+            canvasFase3.ontouchmove = moverToque;
+            canvasFase3.ontouchend = soltarToque;
+        }
+
+        function iniciarArremessoTimer() {
+            tempoRestante = 5.0;
+            tocando = false;
+            bolaSendoArrastada = false;
+            document.getElementById('temporizador').innerText = tempoRestante.toFixed(1);
+            document.getElementById('temporizador').style.display = 'block';
+
+            intervaloTimer = setInterval(() => {
+                tempoRestante -= 0.1;
+                document.getElementById('temporizador').innerText = tempoRestante.toFixed(1);
+                if (tempoRestante <= 0) {
+                    clearInterval(intervaloTimer);
+                    if (jogoFase3Ativo && !arremessando) {
+                        if (bolaSendoArrastada) { 
+                            mostrarTelaFinal("Você foi bloqueado!");
+                        } else { 
+                            mostrarTelaFinal("Você demorou demais, teve sua bola roubada");
+                        }
+                    }
+                }
+            }, 100);
+
+            timerArremessoTimeout = setTimeout(() => {}, 5000);
+        }
+
+        function iniciarToque(e) {
+            e.preventDefault();
+            if (arremessando || !jogoFase3Ativo) return;
+            tocando = true;
+            const pos = getPosCanvas(e);
+            const dist = Math.hypot(pos.x - bola.x, pos.y - bola.y);
+            if (dist < bola.raio * 2.0) { 
+                pontoInicial = { ...pos }; 
+                bolaSendoArrastada = true;
+            } else {
+                pontoInicial = null; 
+                bolaSendoArrastada = false;
+            }
+            pontoAtualArrasto = { ...pos }; 
+        }
+
+        function moverToque(e) {
+            e.preventDefault();
+            if (!tocando || !bolaSendoArrastada || arremessando || !jogoFase3Ativo) return;
+            pontoAtualArrasto = getPosCanvas(e);
+        }
+
+        function soltarToque(e) {
+            e.preventDefault();
+            if (arremessando || !tocando || !bolaSendoArrastada || !jogoFase3Ativo) {
+                tocando = false;
+                bolaSendoArrastada = false;
+                return;
+            }
+            
+            tocando = false;
+            bolaSendoArrastada = false;
+            
+            const pontoFinal = getPosCanvas(e); 
+            
+            if (!pontoInicial) return; 
+
+            arremessando = true;
+            clearTimeout(timerArremessoTimeout); 
+            clearInterval(intervaloTimer); 
+            document.getElementById('temporizador').style.display = 'none';
+
+            const deltaX = pontoFinal.x - pontoInicial.x; 
+            const deltaY = pontoFinal.y - pontoInicial.y;
+
+            if (deltaY >= -30) { 
+                arremessando = false;
+                bola.x = bola.originalX;
+                bola.y = bola.originalY;
+                bola.velX = 0;
+                bola.velY = 0;
+                clearTimeout(timerArremessoTimeout);
+                clearInterval(intervaloTimer);
+                iniciarArremessoTimer();
+                return; 
+            }
+
+            let forcaX = deltaX * 0.09; 
+            let forcaY = deltaY * 0.18;
+
+            bola.velX = Math.min(Math.max(forcaX, -10), 10); 
+            bola.velY = Math.min(Math.max(forcaY, -35), -15);
+        }
+
+        function getPosCanvas(e) {
+            const rect = canvasFase3.getBoundingClientRect();
+            let touch;
+            if (e.touches && e.touches.length > 0) {
+                touch = e.touches[0];
+            } else if (e.changedTouches && e.changedTouches.length > 0) {
+                touch = e.changedTouches[0];
+            } else {
+                return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+            }
+            return { x: touch.clientX - rect.left, y: touch.clientY - rect.top };
+        }
+
+        function desenharLinhaMira() {
+            if (!tocando || !bolaSendoArrastada || !pontoInicial || !jogoFase3Ativo) return;
+            const deltaX = pontoAtualArrasto.x - pontoInicial.x;
+            const deltaY = pontoAtualArrasto.y - pontoInicial.y; 
+            if(deltaY >= -30) return; 
+            ctxFase3.beginPath();
+            ctxFase3.strokeStyle = 'rgba(255, 255, 255, 0.7)'; 
+            ctxFase3.lineWidth = 3;
+            ctxFase3.moveTo(bola.x, bola.y);
+            ctxFase3.lineTo(bola.x + deltaX * 1.5, bola.y + deltaY * 1.5); 
+            ctxFase3.stroke();
+            ctxFase3.closePath();
+            ctxFase3.beginPath();
+            ctxFase3.fillStyle = 'white';
+            ctxFase3.arc(bola.x + deltaX * 1.5, bola.y + deltaY * 1.5, 5, 0, Math.PI * 2);
+            ctxFase3.fill();
+            ctxFase3.closePath();
+        }
+
+        function desenharJogador() {
+            ctxFase3.fillStyle = '#4A4A4A'; 
+            ctxFase3.fillRect(jogador.x + 15, jogador.y + 30, 30, 70); 
+            ctxFase3.beginPath();
+            ctxFase3.arc(jogador.x + jogador.largura / 2, jogador.y + 20, 15, 0, Math.PI * 2);
+            ctxFase3.fill();
+            ctxFase3.fillRect(jogador.x, jogador.y + 40, 60, 15); 
+        }
+
+        // Esta é a função que foi cortada
+        function loopJogo() {
+            if (!jogoFase3Ativo) {
+                animationFrameId = undefined;
+                return;
+            }
+
+            // MUDANÇA: Limpa o canvas e desenha a imagem de fundo
+            ctxFase3.clearRect(0, 0, canvasFase3.width, canvasFase3.height);
+            ctxFase3.drawImage(backgroundImage, 0, 0, canvasFase3.width, canvasFase3.height);
+            
+            // O chão da quadra agora é parte da imagem, então esta linha foi removida:
+            // ctxFase3.fillStyle = '#654321'; 
+            // ctxFase3.fillRect(0, canvasFase3.height - 30, canvasFase3.width, 30); 
+            
+            desenharJogador();
+            
+            ctxFase3.fillStyle = cesta.corTabela;
+            ctxFase3.fillRect(cesta.tabelaX, cesta.tabelaY, cesta.tabelaW, cesta.tabelaH);
+            ctxFase3.fillStyle = cesta.corAro;
+            ctxFase3.fillRect(cesta.x, cesta.y, cesta.largura, cesta.espessuraAro);
+            ctxFase3.fillRect(cesta.x - cesta.espessuraAro, cesta.y, cesta.espessuraAro, cesta.largura / 3); 
+            ctxFase3.fillRect(cesta.x + cesta.largura, cesta.y, cesta.espessuraAro, cesta.largura / 3); 
+
+            if (arremessando) {
+                bola.velY += gravidade;
+                bola.velX *= (1 - atrito);
+                bola.x += bola.velX;
+                bola.y += bola.velY;
+
+                // Colisões (Tabela, Aro, Hastes)
+                if (bola.x + bola.raio > cesta.tabelaX && bola.x - bola.raio < cesta.tabelaX + cesta.tabelaW && bola.y - bola.raio < cesta.tabelaY + cesta.tabelaH && bola.y + bola.raio > cesta.tabelaY) {
+                    bola.velX *= -0.7; 
+                    if (bola.x < cesta.tabelaX + cesta.tabelaW / 2) { bola.x = cesta.tabelaX - bola.raio; } else { bola.x = cesta.tabelaX + cesta.tabelaW + bola.raio; }
+                    tocouAro = true; 
+                }
+                if (bola.y + bola.raio > cesta.y && bola.y - bola.raio < cesta.y + cesta.espessuraAro && bola.x > cesta.x - bola.raio && bola.x < cesta.x + cesta.largura + bola.raio) {
+                    if (bola.velY > 0) { bola.y = cesta.y - bola.raio; bola.velY *= -0.6; bola.velX *= 0.8; } else { bola.y = cesta.y + cesta.espessuraAro + bola.raio; bola.velY *= -0.6; bola.velX *= 0.8; }
+                    tocouAro = true;
+                }
+                if ( (bola.x + bola.raio > cesta.x - cesta.espessuraAro && bola.x - bola.raio < cesta.x && bola.y > cesta.y && bola.y < cesta.y + cesta.largura/3) || (bola.x + bola.raio > cesta.x + cesta.largura && bola.x - bola.raio < cesta.x + cesta.largura + cesta.espessuraAro && bola.y > cesta.y && bola.y < cesta.y + cesta.largura/3) ) {
+                    bola.velX *= -0.7; 
+                    tocouAro = true;
+                }
+
+                // Verificação de CESTA
+                if (bola.y > cesta.y + cesta.espessuraAro && bola.y < cesta.y + cesta.largura / 2 && bola.velY > 0 && bola.x > cesta.x && bola.x < cesta.x + cesta.largura) {
+                    mostrarTelaFinal("Você acertou, seu time venceu!", "CESTA!");
+                    return; 
+                }
+                // Verificação de ERRO (Air ball / Quase)
+                // MUDANÇA: Posição do "chão" ajustada para ficar alinhada com o jogador
+                if (bola.y > canvasFase3.height - 30 - bola.raio && bola.velY > 0) { 
+                    if (tocouAro) { mostrarTelaFinal("Quase que entrou"); } else { mostrarTelaFinal("Air ball :/"); }
+                    return; 
+                }
+                // Colisão com paredes laterais
+                if (bola.x + bola.raio > canvasFase3.width || bola.x - bola.raio < 0) {
+                    bola.velX *= -0.7; 
+                    if (bola.x + bola.raio > canvasFase3.width) bola.x = canvasFase3.width - bola.raio;
+                    else bola.x = bola.raio;
+                }
+            } else { 
+                bola.x = bola.originalX;
+                bola.y = bola.originalY;
+            }
+            ctxFase3.fillStyle = bola.cor;
+            ctxFase3.beginPath();
+            ctxFase3.arc(bola.x, bola.y, bola.raio, 0, Math.PI * 2);
+            ctxFase3.fill();
+            ctxFase3.closePath();
+            desenharLinhaMira(); 
+            animationFrameId = requestAnimationFrame(loopJogo);
+        }
+
+    </script>
+</body>
+</html>
